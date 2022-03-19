@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="shortcut icon" href="/static/images/写博客.png">
+    <title>新冠疫情数据展示</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <script src="/static/china/dist/echarts.js"></script>
+    <script src="/static/china/map/js/china.js"></script>
+    <script src="/static/js/jquery.js"></script>
+    <!-- include jQuery -->
+    <script src="/static/js/jquery.main.js"></script>
+    <script src="/static/sweetalert2/js/sweetalert2.js"></script>
+    <script src="/static/sweetalert2/js/sweetalert2.min.js"></script>
+    <script src="/static/sweetalert2/js/sweetalert2.all.js"></script>
+    <script src="/static/sweetalert2/js/sweetalert2.all.min.js"></script>
+    <style>
+        *{margin:0;padding:0}
+        html,body{
+            width:100%;
+            height:100%;
+        }
+        #main{
+              width: 100%;
+              height: 100%;
+              margin: 150px auto;
+              border: 1px solid #ddd;
+          }
+        /*默认长宽比0.75*/
+        .box-block {
+            display: table;
+            width: 100%;
+            text-align: center;
+        }
+
+        .box-block div {
+            display: table-cell;
+            word-wrap: break-word;
+            text-align: center;
+        }
+        #allinfo{
+            z-index: 10;
+            border-radius:2px;
+            display: block;
+            position: fixed;
+            left: 10px;
+            top: 300px;
+            width:87px;
+            height: 50px;
+            background: #f5ab35;
+            font-size: 15px;
+            color: white;
+            font-family: 'Poppins', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            margin:0 auto;
+            text-align: center;
+        }
+        button.orange {
+            z-index: 10;
+            color: #444444;
+            display: block;
+            position: fixed;
+            left: 10px;
+            top: 300px;
+            width:87px;
+            height: 50px;
+            {#background: #F3F3F3;#}
+            background: #f5ab35;
+            border: 1px #DADADA solid;
+            padding: 5px 10px;
+            border-radius: 2px;
+            font-weight: bold;
+            font-size: 12pt;
+            outline: none;
+
+        }
+        button.orange:hover {
+            border: 1px #C6C6C6 solid;
+            box-shadow: 1px 1px 1px #EAEAEA;
+            color: #333333;
+            background: #F7F7F7;
+        }
+        button.orange:active {
+            box-shadow: inset 1px 1px 1px #DFDFDF;
+        }
+    </style>
+</head>
+<body>
+    <script type="text/javascript">
+            function showall() {
+                Swal.fire({
+                    title: '<strong>地区&nbsp;确诊人数</u></strong>',
+                    {#icon: 'info',#}
+                    html:
+                        '{% for key,value in data.items%}\n'+
+                            '<p style="font-size:larger;">{{ key }}:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ value }}&nbsp;人</p>\n'+
+                            '{% endfor %}',
+                    showCloseButton: true,
+                    showCancelButton: true,
+                    focusConfirm: false,
+                    confirmButtonText: "返回首页",
+                    cancelButtonText: "关闭"
+                }).then((result) =>{
+                        if(result.value){
+                            window.open('https://www.guanacossj.com')
+                        }
+                })
+            }
+    </script>
+    <div id="main">
+    </div>
+    <script type="text/javascript">
+        const myChart = echarts.init(document.getElementById('main'));
+        let valueList = [];
+        let dateList = [];
+        option = {
+            title:  {
+              left: 'center',
+              text: '新型冠状病毒全国折线图',
+            },
+            tooltip: {
+                trigger: 'axis'
+            },
+            visualMap: {
+                show: false,
+                type: 'continuous',
+                seriesIndex: 0,
+                min: 0,
+                max: 400
+            },
+            xAxis: {
+                data: dateList
+            },
+            yAxis: {
+            },
+            grid: {
+              top: '18%'
+            },
+            series: [
+                {
+                  type: 'line',
+                  showSymbol: false,
+                  data: valueList
+                }
+              ]
+        }
+        myChart.setOption(option);
+        myChart.showLoading();
+        const statisticsData = [];                  //这是我自己建的空数组，为了把异步拿到的数据push进去
+        $.ajax({
+            type : "get",
+            async : true,                            //异步请求（同步请求将会锁住浏览器，用户其他操作必须等待请求完成才可以执行）
+            url : "/covid19/virus_data/history",     //请求发送到相应的servlet
+            dataType : "json",
+            success : function(data){
+                if (data) {
+                    const dataStage = data['data'];
+                    console.log(dataStage);
+                    dataStage.forEach(function (item) {
+                        statisticsData.push([item.date, item.value]);   //把拿到的异步数据push进我自己建的数组里
+                    })
+                    const dataOrigin = [["2000-06-05", 116], ["2000-06-06", 129], ["2000-06-07", 135], ["2000-06-08", 86], ["2000-06-09", 73], ["2000-06-10", 85], ["2000-06-11", 73], ["2000-06-12", 68], ["2000-06-13", 92], ["2000-06-14", 130], ["2000-06-15", 245], ["2000-06-16", 139], ["2000-06-17", 115], ["2000-06-18", 111], ["2000-06-19", 309], ["2000-06-20", 206], ["2000-06-21", 137], ["2000-06-22", 128], ["2000-06-23", 85], ["2000-06-24", 94], ["2000-06-25", 71], ["2000-06-26", 106], ["2000-06-27", 84], ["2000-06-28", 93], ["2000-06-29", 85], ["2000-06-30", 73], ["2000-07-01", 83], ["2000-07-02", 125], ["2000-07-03", 107], ["2000-07-04", 82], ["2000-07-05", 44], ["2000-07-06", 72], ["2000-07-07", 106], ["2000-07-08", 107], ["2000-07-09", 66], ["2000-07-10", 91], ["2000-07-11", 92], ["2000-07-12", 113], ["2000-07-13", 107], ["2000-07-14", 131], ["2000-07-15", 111], ["2000-07-16", 64], ["2000-07-17", 69], ["2000-07-18", 88], ["2000-07-19", 77], ["2000-07-20", 83], ["2000-07-21", 111], ["2000-07-22", 57], ["2000-07-23", 55], ["2000-07-24", 60]];
+                    dateList = statisticsData.map(function (item) {
+                        return item[0];
+                    });
+                    valueList = statisticsData.map(function (item) {
+                        return item[1];
+                    });
+                    myChart.hideLoading();
+                    myChart.setOption({
+                        xAxis: {
+                            data: dateList
+                        },
+                        series: [{
+                            type: 'line',
+                            showSymbol: false,
+                            data: statisticsData
+                        }]
+                    });
+                } else {
+                    alert("图表请求数据失败!");
+                }
+            }
+        });
+    </script>
+</body>
+</html>
