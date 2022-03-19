@@ -87,11 +87,9 @@ def china_wuhan_virus(request):
         cities = soup.find('div', {'class': 'areaBox___3jZkr'})
         # 每个省
         protocols = cities.find_all('div')
-        # data = []
         data = {}
         for i in protocols:
             try:
-                # protocol = {}
                 first = i.find('div', {'class': 'areaBlock1___3V3UU'})
                 content = first.find_all('p')
                 name = content[0].get_text()
@@ -128,10 +126,11 @@ def get_history_data_all(request):
     data = []
     response['data'] = data
     if request.method == 'GET':
-        current_data_all = CovidCurrent.objects.all()
+        current_data_all = CovidCurrent.objects.all().order_by('current_date')
         year_month_day = set()  # 设置集合，无重复元素
         for a in current_data_all:
             year_month_day.add(a.current_date)  # 把每篇文章的年、月以元组形式添加到集合中
+        year_month_day = sorted(year_month_day)
         for b in year_month_day:
             each = {'date': b.strftime("%Y-%m-%d"),
                     'value': CovidCurrent.objects.filter(current_date=b).aggregate(nums=Sum('incr_confirmed'))['nums']}
