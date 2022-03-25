@@ -115,7 +115,7 @@ def show_line_history(request):
 def get_current_data_all(request):
     response = {}
     if request.method == 'GET':
-        current_data_all = CovidCurrent.objects.all()
+        current_data_all = CovidCurrent.objects.filter(current_date=datetime.datetime.now().strftime("%Y-%m-%d"))
         response['list'] = json.loads(
             core_serializers.serialize("json", current_data_all, use_natural_foreign_keys=True, ensure_ascii=False))
         return JsonResponse(response, json_dumps_params={'ensure_ascii': False})
